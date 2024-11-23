@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockercredential')
         DOCKER_IMAGE = "aniket1709/python-flask-app"
         DOCKER_TAG = "v${BUILD_NUMBER}"
-        CUSTOM_PORT = '5000'  // Set your custom port here
+        CUSTOM_PORT = '500'  // Set your custom port here
     }
     
     stages {
