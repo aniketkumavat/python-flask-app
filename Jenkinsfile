@@ -17,7 +17,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    python -m pip install -r requirements.txt
+                    python -m pip install -r requirements.txt --break-system-packages
                     python -m pytest test_app.py
                 '''
             }
