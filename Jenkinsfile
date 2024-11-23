@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockercredential')
         DOCKER_IMAGE = "aniket1709/python-flask-app"
         DOCKER_TAG = "v${BUILD_NUMBER}"
+        CUSTOM_PORT = '5000'  // Set your custom port here
     }
     
     stages {
@@ -38,6 +39,8 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // Run the container with the custom port mapping
+                    sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}"
             }
         }
     }
