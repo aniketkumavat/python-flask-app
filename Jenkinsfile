@@ -39,8 +39,12 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                // Run the container with the custom port mapping
-                    sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}"
+            }
+        }
+        stage('Run Docker Image'){
+            steps{
+                   // Run the container with the custom port mapping
+                    sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
     }
