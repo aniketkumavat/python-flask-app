@@ -44,8 +44,14 @@ pipeline {
        stage('Run Docker Image') {
           steps {
                 // Stop and remove any container running on the custom port to avoid port conflicts
-                sh "docker ps -q --filter "ancestor=${DOCKER_IMAGE}:${DOCKER_TAG}" | xargs -r docker rm -f"
-
+ // Find all containers using the specified port and remove them
+                sh """
+                    CONTAINERS=$(docker ps -q --filter "expose=${CUSTOM_PORT}")
+                    if [ -n "\$CONTAINERS" ]; then
+                        docker stop \$CONTAINERS
+                        docker rm -f \$CONTAINERS
+                    fi
+                """
                 // Run the container with the custom port mapping
                 sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
