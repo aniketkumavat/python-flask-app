@@ -41,12 +41,16 @@ pipeline {
                 sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
-        stage('Run Docker Image'){
-            steps{
-                   // Run the container with the custom port mapping
-                    sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}:${DOCKER_TAG}"
+       stage('Run Docker Image') {
+          steps {
+                // Stop and remove any running container with the same image to free up the port
+                sh "docker rm -f \$(docker ps -q --filter ancestor=${DOCKER_IMAGE}:${DOCKER_TAG}) || true"
+
+                // Run the container with the custom port mapping
+                sh "docker run -d -p ${CUSTOM_PORT}:${CUSTOM_PORT} ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
+
     }
     
     post {
