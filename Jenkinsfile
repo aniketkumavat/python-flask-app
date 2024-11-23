@@ -52,6 +52,8 @@ pipeline {
     post {
         always {
             sh 'docker logout'
+            // Clean up Docker images to save space
+                sh "docker image prune -f"
         }
     }
 }
