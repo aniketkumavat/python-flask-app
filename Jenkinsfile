@@ -43,12 +43,9 @@ pipeline {
         }
        stage('Run Docker Image') {
           steps {
-                // Stop and remove any container running on the custom port to avoid port conflicts
- // Find all containers using the specified port and remove them
-                sh """
-                    CONTAINERS=$(docker ps -q --filter "expose=${CUSTOM_PORT}")
+                  sh """
+                    CONTAINERS=\$(docker ps -q --filter "expose=${CUSTOM_PORT}")
                     if [ -n "\$CONTAINERS" ]; then
-                        docker stop \$CONTAINERS
                         docker rm -f \$CONTAINERS
                     fi
                 """
