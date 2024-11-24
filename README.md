@@ -1,7 +1,5 @@
 
----
-
-# Python Flask CI/CD Pipeline with Jenkins on AWS
+# Python Flask Application CI/CD Pipeline with Jenkins on AWS
 
 This repository contains a simple Flask application and a Jenkins pipeline configuration for automating tests, Docker builds, and image deployment to DockerHub. The pipeline is managed using Jenkins, hosted on an AWS EC2 instance.
 
@@ -27,7 +25,7 @@ This repository contains a simple Flask application and a Jenkins pipeline confi
 ### 3. Jenkins Server Setup on AWS
 1. Launch an EC2 instance (Ubuntu or Amazon Linux).
 2. SSH into the instance and install:
-   - **Java** (for Jenkins)
+   - **Java** (for Jenkins installation)
    - **Docker** (for building and pushing images)
    - **Python** (for running the application)
 3. Grant Jenkins the necessary permissions to run Docker:
@@ -86,6 +84,7 @@ pipeline {
 ```
 
 Replace `username/python-flask-app` with your DockerHub repository name.
+All stages content inside Jenkinsfile.
 
 ---
 
