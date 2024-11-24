@@ -1,200 +1,125 @@
-# python-flask-app
 
-Deploy an python application with CI/CD Pipeline
+---
 
-# CI/CD Pipeline Documentation: Python Application with GitHub, Jenkins, and Docker
+# Python Flask CI/CD Pipeline with Jenkins on AWS
 
-## Table of Contents
-1. [Project Overview]
-2. [Prerequisites]
-3. [Application Setup]
-4. [GitHub Configuration]
-5. [Jenkins Setup]
-6. [Docker Configuration]
-7. [Pipeline Configuration]
-8. [Testing and Deployment]
-9. [Troubleshooting]
-10. [Best Practices]
+This repository contains a simple Flask application and a Jenkins pipeline configuration for automating tests, Docker builds, and image deployment to DockerHub. The pipeline is managed using Jenkins, hosted on an AWS EC2 instance.
 
-## 1. Project Overview
+---
 
-### 1.1 Architecture
-- Source Control: GitHub
-- CI/CD Server: Jenkins
-- Containerization: Docker
-- Image Registry: DockerHub
+## Steps to Set Up the Project
 
-### 1.2 Pipeline Flow
+### 1. GitHub Repository Setup
+1. Create a new GitHub repository.
+2. Add the following files in the repository:
+   - `app.py`: The Flask application code
+   - `test_app.py`: Unit tests for the application
+   - `requirements.txt`: Dependencies for the Flask application
+   - `Dockerfile`: Docker configuration for containerizing the app
+   - `Jenkinsfile`: Pipeline configuration for Jenkins
 
-1. Code push to GitHub
-2. Jenkins automatically triggers build
-3. Run Python tests
-4. Build Docker image
-5. Push to DockerHub
+3. Push the code to GitHub.
 
-## 2. Prerequisites
+### 2. DockerHub Repository Setup
+1. Create a new DockerHub repository to store your application images.
+2. Note the repository name (e.g., `username/python-flask-app`) as it will be referenced in the Jenkins pipeline.
 
-### 2.1 Software Requirements
+### 3. Jenkins Server Setup on AWS
+1. Launch an EC2 instance (Ubuntu or Amazon Linux).
+2. SSH into the instance and install:
+   - **Java** (for Jenkins)
+   - **Docker** (for building and pushing images)
+   - **Python** (for running the application)
+3. Grant Jenkins the necessary permissions to run Docker:
+   ```bash
+   sudo usermod -aG docker jenkins
+   ```
 
-- Git
-- Jenkins 
-- Python 3.x
-- Docker
-- DockerHub account
+### 4. Jenkins Configuration
+1. Access Jenkins at `http://<your-ec2-public-ip>:8080`.
+2. Create a new **Pipeline** job and configure it:
+   - **Source Control**: Connect your GitHub repository.
+   - **Build Trigger**: Set up a webhook in GitHub to trigger Jenkins on each commit.
 
-### 2.2 System Requirements
+3. Add your DockerHub credentials in Jenkins with ID `dockercredential`.
 
-```bash
-# Install Python
-sudo apt update
-sudo apt install -y python3 python3-pip
+### 5. Jenkins Pipeline Stages
 
-# Install Docker
-sudo apt install -y docker.io
-sudo systemctl start docker
-sudo systemctl enable docker
+The pipeline defined in `Jenkinsfile` includes:
+   - **Checkout**: Clones the latest code from GitHub.
+   - **Run Tests**: Installs dependencies and runs unit tests.
+   - **Build Docker Image**: Builds a Docker image tagged with the build number.
+   - **Login to DockerHub**: Authenticates using DockerHub credentials.
+   - **Push Docker Image**: Pushes the Docker image to your DockerHub repository.
+   - **Run Docker Image**: Removes any existing container on the custom port and deploys the new container.
 
-# Install Git
-sudo apt install -y git
+---
+
+### Jenkinsfile Overview
+
+The Jenkins pipeline (Jenkinsfile) configuration:
+
+```groovy
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockercredential')
+        DOCKER_IMAGE = "username/python-flask-app"
+        DOCKER_TAG = "v${BUILD_NUMBER}"
+        CUSTOM_PORT = '500'
+    }
+    stages {
+        stage('Checkout') { ... }
+        stage('Run Tests') { ... }
+        stage('Build Docker Image') { ... }
+        stage('Login to DockerHub') { ... }
+        stage('Push Docker Image') { ... }
+        stage('Run Docker Image') { ... }
+    }
+    post {
+        always {
+            sh 'docker logout'
+            sh "docker image prune -f"
+        }
+    }
+}
 ```
 
-## 3. Application Setup
+Replace `username/python-flask-app` with your DockerHub repository name.
 
-### 3.1 Python Application (app.py)
+---
 
-```python
-from flask import Flask
+### Dockerfile Overview
 
-app = Flask(__name__)
+The Dockerfile sets up the Flask application environment:
 
-@app.route('/')
-def hello_world():
-    return 'Hello, DevOps World!'
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 500
+CMD ["python", "app.py"]
 ```
 
-### 3.2 Unit Tests (test_app.py)
-```python
-import unittest
-from app import app
+---
 
-class TestApp(unittest.TestCase):
-    def setUp(self):
-        self.app = app.test_client()
-        
-    def test_hello_world(self):
-        response = self.app.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode('utf-8'), 'Hello, DevOps World!')
+## Running and Testing
 
-if __name__ == '__main__':
-    unittest.main()
-```
+1. Make a code change, commit, and push to GitHub.
+2. Jenkins automatically triggers the pipeline:
+   - Tests the code
+   - Builds and pushes a Docker image to DockerHub
+   - Deploys the container on the custom port
 
-### 3.3 Requirements (requirements.txt)
+---
 
-```text
-flask==3.0.0
-pytest==7.4.3
-```
+## Notes
+- Ensure Docker, Jenkins, and Python are correctly installed on the AWS server.
+- Use the custom port as defined in `Jenkinsfile` (`CUSTOM_PORT` environment variable).
+- Clean up Docker images regularly to free up disk space.
 
-### 3.4 Dockerfile
+---
 
-
-## 4. GitHub Configuration
-
-### 4.1 Repository Setup
-
-```bash
-# Initialize local repository
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-
-# Add remote repository
-git remote add origin <your-repo-url>
-git push -u origin main
-```
-
-### 4.2 Webhook Configuration
-1. Go to Repository Settings → Webhooks
-2. Add webhook:
-   - Payload URL: `http://your-jenkins-url/github-webhook/`
-   - Content type: `application/json`
-   - Events: Just the push event
-   - Active: ✓
-
-## 5. Jenkins Setup
-
-### 5.1 Required Plugins
-
-1. Go to "Manage Jenkins" → "Manage Plugins"
-2. Install:
-   - GitHub Integration
-   - Docker Pipeline
-   - Credentials Plugin
-
-### 5.2 Credentials Setup
-1. Go to "Manage Jenkins" → "Credentials"
-2. Add DockerHub credentials:
-
-   Kind: Username with password
-   Scope: Global
-   Username: <DockerHub username>
-   Password: <DockerHub password>
-   ID: dockerhubcredential
-
-### 5.3 Pipeline Job Creation
-1. Click "New Item"
-2. Select "Pipeline"
-3. Configure:
-   - GitHub project URL
-   - Build Triggers: GitHub hook trigger
-   - Pipeline: Pipeline script from SCM
-   - SCM: Git
-   - Repository URL
-   - Credentials
-   - Branch: */main
-   - Script Path: Jenkinsfile
-
-## 6. Docker Configuration
-
-### 6.1 Jenkins Docker Setup
-
-# Add Jenkins user to docker group
-sudo usermod -aG docker jenkins
-
-# Restart Jenkins
-sudo systemctl restart jenkins
-
-### 6.2 DockerHub Repository
-1. Create repository on DockerHub
-2. Note repository name for Jenkinsfile
-
-## 7. Pipeline Configuration
-
-### 7.1 Jenkinsfile
-
-
-## 8. Testing and Deployment
-
-### 8.1 Testing Pipeline
-1. Make code changes
-2. Commit and push to GitHub
-3. Monitor Jenkins pipeline execution
-4. Verify DockerHub repository
-
-### 8.2 Manual Testing
-
-```bash
-# Pull and run container
-docker pull your-dockerhub-username/your-app-name:latest
-docker run -p 5000:5000 your-dockerhub-username/your-app-name:latest
-
-# Test application
-curl http://localhost:5000
-```
-
+This setup enables automated testing, building, and deployment of the Flask application using Jenkins on AWS.
