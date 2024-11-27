@@ -115,7 +115,7 @@ CMD ["python", "app.py"]
 ---
 
 ## Notes
-- Ensure Docker, Jenkins, and Python are correctly installed on the AWS server.
+- Ensure Docker, Jenkins, and Python are correctly installed on the AWS server
 - Use the custom port as defined in `Jenkinsfile` (`CUSTOM_PORT` environment variable).
 - Clean up Docker images regularly to free up disk space.
 
