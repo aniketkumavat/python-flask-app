@@ -122,3 +122,5 @@ CMD ["python", "app.py"]
 ---
 
 This setup enables automated testing, building, and deployment of the Flask application using Jenkins on AWS.
+![app](https://github.com/user-attachments/assets/90e39110-af3b-4c09-bd6e-7da81aa17d4e)
+
