@@ -36,7 +36,7 @@ pipeline {
             }
         }
         
-        stage('Push Docker Image') {
+        stage('Push Docker Image')  {        // push image to dockerhub
             steps {
                 sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
