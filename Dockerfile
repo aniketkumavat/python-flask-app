@@ -12,3 +12,4 @@ EXPOSE 500
 CMD ["python", "app.py"]
 #test-app
 #main.py
+#test
